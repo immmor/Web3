@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Blog</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        input, textarea {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Blog System</h1>
+    
+    <div class="section">
+        <h2>Create User</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="createUser()">Create User</button>
+    </div>
+
+    <div class="section">
+        <h2>Get User</h2>
+        <input type="number" id="userId" placeholder="User ID">
+        <button onclick="getUser()">Get User</button>
+        <div id="userResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>Create Blog</h2>
+        <input type="text" id="blogTitle" placeholder="Title">
+        <textarea id="blogContent" placeholder="Content" rows="4"></textarea>
+        <input type="number" id="authorId" placeholder="Author ID">
+        <button onclick="createBlog()">Create Blog</button>
+    </div>
+
+    <div class="section">
+        <h2>Get Blog</h2>
+        <input type="number" id="blogId" placeholder="Blog ID">
+        <button onclick="getBlog()">Get Blog</button>
+        <div id="blogResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>List Blogs</h2>
+        <button onclick="listBlogs()">List Blogs</button>
+        <div id="blogsResult"></div>
+    </div>
+
+    <script>
+        const USER_API_BASE = 'http://localhost:8888';
+        const BLOG_API_BASE = 'http://localhost:8889';
+        
+        async function createUser() {
+            const user = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+            
+            try {
+                const response = await fetch(USER_API_BASE + '/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(user)
+                });
+                const result = await response.json();
+                alert('User created with ID: ' + result.id);
+            } catch (error) {
+                alert('Error creating user: ' + error);
+            }
+        }
+
+        async function getUser() {
+            const userId = document.getElementById('userId').value;
+            
+            try {
+                const response = await fetch(USER_API_BASE + '/users/' + userId);
+                
+                // 检查响应状态
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+                const result = await response.json();
+                document.getElementById('userResult').innerHTML = 
+                    `Username: ${result.user.username}, Email: ${result.user.email}`;
+            } catch (error) {
+                alert('Error getting user: ' + error.message);
+            }
+        }
+
+        async function createBlog() {
+            const blog = {
+                title: document.getElementById('blogTitle').value,
+                content: document.getElementById('blogContent').value,
+                author_id: parseInt(document.getElementById('authorId').value)
+            };
+            
+            try {
+                const response = await fetch(BLOG_API_BASE + '/blogs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(blog)
+                });
+                const result = await response.json();
+                alert('Blog created with ID: ' + result.id);
+            } catch (error) {
+                alert('Error creating blog: ' + error);
+            }
+        }
+
+        async function getBlog() {
+            const blogId = document.getElementById('blogId').value;
+            
+            try {
+                const response = await fetch(BLOG_API_BASE + '/blogs/' + blogId);
+                const result = await response.json();
+                document.getElementById('blogResult').innerHTML = 
+                    `Title: ${result.blog.title}<br>Content: ${result.blog.content}`;
+            } catch (error) {
+                alert('Error getting blog: ' + error);
+            }
+        }
+
+        async function listBlogs() {
+            try {
+                const response = await fetch(BLOG_API_BASE + '/blogs');
+                const result = await response.json();
+                let html = '<h3>Blogs:</h3>';
+                result.blogs.forEach(blog => {
+                    html += `<p><strong>${blog.title}</strong> - ${blog.content.substring(0, 100)}...</p>`;
+                });
+                document.getElementById('blogsResult').innerHTML = html;
+            } catch (error) {
+                alert('Error listing blogs: ' + error);
+            }
+        }
+    </script>
+</body>
+</html>
