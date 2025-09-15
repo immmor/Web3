@@ -1,0 +1,15 @@
+Name: order-api
+Host: 0.0.0.0
+Port: 8888
+
+MySQL:
+  DSN: "app_user:app_password@tcp(localhost:3306)/app_db?charset=utf8mb4&parseTime=True&loc=Local"
+
+Redis:
+  Addr: "localhost:6379"
+  Password: ""
+  DB: 0
+
+Kafka:
+  Brokers:
+    - "localhost:9092"

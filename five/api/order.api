@@ -1,0 +1,72 @@
+syntax = "v1"
+
+info (
+	title:   "订单交易服务API"
+	desc:    "订单挂单、下架、成交、手续费扣除服务"
+	version: "1.0"
+)
+
+type OrderCreateReq {
+	UserID int64   `json:"user_id"`
+	Symbol string  `json:"symbol"` // 交易对
+	Price  float64 `json:"price"` // 价格
+	Amount float64 `json:"amount"` // 数量
+	Side   int     `json:"side"` // 买卖方向: 1-买, 2-卖
+	Type   int     `json:"type"` // 订单类型: 1-限价, 2-市价
+}
+
+type OrderCreateResp {
+	OrderID int64 `json:"order_id"`
+	Status  int   `json:"status"`
+}
+
+type OrderCancelReq {
+	OrderID int64 `json:"order_id"`
+	UserID  int64 `json:"user_id"`
+}
+
+type OrderCancelResp {
+	Success bool `json:"success"`
+}
+
+type OrderMatchReq {
+	TakerOrderID int64   `json:"taker_order_id"`
+	MakerOrderID int64   `json:"maker_order_id"`
+	Price        float64 `json:"price"`
+	Amount       float64 `json:"amount"`
+}
+
+type OrderMatchResp {
+	Success bool    `json:"success"`
+	Fee     float64 `json:"fee"` // 手续费
+}
+
+@server (
+	group:      order
+	middleware: Auth,Log
+)
+service order-api {
+	@handler CreateOrder
+	post /order/create (OrderCreateReq) returns (OrderCreateResp)
+
+	@handler CancelOrder
+	post /order/cancel (OrderCancelReq) returns (OrderCancelResp)
+
+	@handler GetOrderBook
+	get /order/book (SymbolReq) returns (OrderBookResp)
+}
+
+type SymbolReq {
+	Symbol string `json:"symbol"`
+}
+
+type OrderBookResp {
+	Bids []OrderItem `json:"bids"`
+	Asks []OrderItem `json:"asks"`
+}
+
+type OrderItem {
+	Price  float64 `json:"price"`
+	Amount float64 `json:"amount"`
+}
+
